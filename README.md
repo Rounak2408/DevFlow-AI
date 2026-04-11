@@ -70,6 +70,10 @@ Repo root is **not** the Vite app: a plain `npm install` at the root only instal
 
 **Alternative:** Set **Root Directory** to `client`, **Build Command** to `npm install && npm run build`, **Publish Directory** to `dist`.
 
+### Vercel (frontend)
+
+Use **Root Directory** `client` (not repo root). **Output Directory** `dist`. If Root stays `.`, the build will not produce a Vite app and you get **404 NOT_FOUND**. `client/vercel.json` adds SPA rewrites for React Router.
+
 ### Render (Web Service — API)
 
 The API lives in **`server/`**. If **Root Directory** is empty (repo root) and **Build Command** is only `npm install; npm run build`, that installs the **client** for Vite — it does **not** install **`server/node_modules`**. Then **`npm run start`** runs the API without `dotenv` etc. → **`ERR_MODULE_NOT_FOUND: dotenv`**.
