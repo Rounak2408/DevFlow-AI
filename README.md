@@ -54,7 +54,7 @@ Developer productivity and team collaboration — projects, Kanban, realtime cha
 ## Production build
 
 ```bash
-npm run build --prefix client
+npm run build
 NODE_ENV=production npm run start --prefix server
 ```
 
@@ -69,6 +69,14 @@ Repo root is **not** the Vite app: a plain `npm install` at the root only instal
 - **Publish Directory:** `client/dist`
 
 **Alternative:** Set **Root Directory** to `client`, **Build Command** to `npm install && npm run build`, **Publish Directory** to `dist`.
+
+### Render (Web Service — API)
+
+The API lives in **`server/`**. If Render’s **Root Directory** is the repo root, `npm install` there does **not** install `server` dependencies — you get errors like **`Cannot find package 'dotenv'`**.
+
+**Option A — recommended:** **Root Directory** = `server`, **Build Command** = `npm install`, **Start Command** = `npm start`.
+
+**Option B:** Root Directory = `.`, **Build Command** = `npm install --prefix server`, **Start Command** = `npm start --prefix server`.
 
 ## Docker (API + databases)
 
