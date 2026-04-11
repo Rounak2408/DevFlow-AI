@@ -6,6 +6,7 @@
     "dev": "concurrently -n server,client -c blue,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm install --prefix client && npm run build --prefix client",
     "build:render": "npm run build",
+    "render:api:build": "npm install --prefix server",
     "start": "npm run start --prefix server",
     "install:all": "npm install --prefix server && npm install --prefix client",
     "redis:up": "docker compose -f docker-compose.redis.yml up -d",

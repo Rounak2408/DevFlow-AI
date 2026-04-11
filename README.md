@@ -72,7 +72,14 @@ Repo root is **not** the Vite app: a plain `npm install` at the root only instal
 
 ### Render (Web Service — API)
 
-The API lives in **`server/`**. If Render’s **Root Directory** is the repo root, `npm install` there does **not** install `server` dependencies — you get errors like **`Cannot find package 'dotenv'`**.
+The API lives in **`server/`**. If **Root Directory** is empty (repo root) and **Build Command** is only `npm install; npm run build`, that installs the **client** for Vite — it does **not** install **`server/node_modules`**. Then **`npm run start`** runs the API without `dotenv` etc. → **`ERR_MODULE_NOT_FOUND: dotenv`**.
+
+**If Root Directory is empty (repo root)** — use this **API** service config (do **not** run `npm run build` here unless you also need the frontend on the same service):
+
+- **Build Command:** `npm run render:api:build`  
+  (same as: `npm install --prefix server`)
+- **Start Command:** `npm run start`  
+  (same as: `npm start --prefix server`)
 
 **Option A — recommended:** **Root Directory** = `server`, **Build Command** = `npm install`, **Start Command** = `npm start`.
 
