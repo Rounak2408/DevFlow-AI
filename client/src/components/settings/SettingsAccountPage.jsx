@@ -313,7 +313,13 @@ export function SettingsAccountPage() {
 
   const perms = me && workspace ? ROLE_PERMISSIONS[workspace.role] || ROLE_PERMISSIONS.Developer : [];
 
-  if (!token) return null;
+  if (!token) {
+    return (
+      <div className="flex min-h-[40vh] items-center justify-center text-sm text-slate-500">
+        Loading session…
+      </div>
+    );
+  }
 
   if (loading) {
     return (

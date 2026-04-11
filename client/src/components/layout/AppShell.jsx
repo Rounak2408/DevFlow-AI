@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Outlet, useLocation, useParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Sidebar } from './Sidebar.jsx';
 import { TopBar } from './TopBar.jsx';
 import { useSidebarStore } from '../../store/sidebarStore.js';
@@ -69,24 +69,21 @@ export function AppShell() {
         <main
           className={`flex min-h-0 flex-1 flex-col ${isChatRoom || isAssistant ? 'overflow-hidden' : 'overflow-x-hidden overflow-y-auto'} ${isBoard || isChatRoom || isAssistant ? '' : 'px-3 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10'}`}
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className={
-                isBoard
-                  ? 'h-full min-h-0'
-                  : isChatRoom || isAssistant
-                    ? 'flex min-h-0 w-full max-w-none flex-1 flex-col'
-                    : 'mx-auto max-w-7xl'
-              }
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className={
+              isBoard
+                ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col'
+                : isChatRoom || isAssistant
+                  ? 'flex min-h-0 min-w-0 w-full max-w-none flex-1 flex-col'
+                  : 'mx-auto w-full min-w-0 max-w-7xl'
+            }
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>

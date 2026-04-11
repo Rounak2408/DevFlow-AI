@@ -226,7 +226,7 @@ export function AssistantPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="relative isolate flex min-h-[calc(100dvh-3.5rem)] w-full flex-1 flex-col overflow-hidden bg-[#05070d] text-slate-100"
+      className="relative isolate flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-[#05070d] text-slate-100"
     >
       <div
         className="pointer-events-none absolute inset-0 z-0 opacity-90"
