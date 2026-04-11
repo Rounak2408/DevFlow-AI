@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # Use Atlas from .env when set; else local compose MongoDB
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/devflow}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
+      # LLM_* / OPENAI_* / GEMINI_* / OLLAMA_* come from env_file: .env (no defaults here that could force OpenAI)
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - api_uploads:/app/uploads
+
+volumes:
+  mongo_data:
+  api_uploads:
