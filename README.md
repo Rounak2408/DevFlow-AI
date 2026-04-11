@@ -60,6 +60,20 @@ NODE_ENV=production npm run start --prefix server
 
 Serve the `client/dist` static files with nginx or a CDN, and set `CLIENT_URL`, `VITE_API_URL`, and `VITE_SOCKET_URL` appropriately.
 
+### Render (Static Site — frontend)
+
+Repo root is **not** the Vite app: `npm install` at the root only installs the meta-package (~1 dependency), so **`vite` never installs** unless you install inside `client/`.
+
+**Option A — recommended:** In Render, set **Root Directory** to `client`, **Build Command** to `npm install && npm run build`, **Publish Directory** to `dist`.
+
+**Option B:** Leave root at `.` and set **Build Command** to:
+
+```bash
+npm run build:render
+```
+
+(`build:render` runs `npm install --prefix client` then `vite build`.)
+
 ## Docker (API + databases)
 
 ```bash
