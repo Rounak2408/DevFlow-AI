@@ -64,7 +64,7 @@ export function AuthRegister() {
           {loading ? 'Creating…' : 'Create account'}
         </button>
       </form>
-      <AuthSocialRow />
+      <AuthSocialRow defaultEmail={email} defaultName={name} />
     </AuthShell>
   );
 }

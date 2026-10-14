@@ -62,7 +62,7 @@ export function AuthLogin() {
           {loading ? 'Signing in…' : 'Log in'}
         </button>
       </form>
-      <AuthSocialRow />
+      <AuthSocialRow defaultEmail={email} />
     </AuthShell>
   );
 }

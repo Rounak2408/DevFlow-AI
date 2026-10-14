@@ -29,7 +29,7 @@ function IconApple() {
 const btnClass =
   'flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-zinc-800/70 py-3 px-2 text-[11px] font-medium text-white transition hover:border-white/[0.15] hover:bg-zinc-800 sm:text-[12px]';
 
-export function AuthSocialRow() {
+export function AuthSocialRow({ defaultEmail = '', defaultName = '' }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState('google');
 
@@ -81,6 +81,8 @@ export function AuthSocialRow() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         initialProvider={selectedProvider}
+        defaultEmail={defaultEmail}
+        defaultName={defaultName}
       />
     </>
   );

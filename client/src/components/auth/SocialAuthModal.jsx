@@ -30,10 +30,10 @@ function IconApple() {
   );
 }
 
-export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google' }) {
+export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', defaultEmail = '', defaultName = '' }) {
   const [provider, setProvider] = useState(initialProvider);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState(defaultEmail || '');
+  const [name, setName] = useState(defaultName || '');
   const [loading, setLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [googleClientId, setGoogleClientId] = useState('');
@@ -48,6 +48,11 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google' })
   }, [initialProvider]);
 
   useEffect(() => {
+    if (defaultEmail && !email) setEmail(defaultEmail);
+    if (defaultName && !name) setName(defaultName);
+  }, [defaultEmail, defaultName, isOpen]);
+
+  useEffect(() => {
     const saved = localStorage.getItem('devflow_google_client_id') || import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
     setGoogleClientId(saved);
   }, []);
@@ -58,57 +63,13 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google' })
     toast.success('Google Client ID saved locally');
   };
 
-  const handleOfficialGoogleSignIn = () => {
-    const activeClientId = googleClientId.trim() || import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!activeClientId) {
-      toast.error('Please configure your Google Client ID first');
-      setShowConfig(true);
-      return;
-    }
-
-    if (!window.google?.accounts?.oauth2) {
-      toast.error('Google Sign-In SDK is loading. Please try again in a moment.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: activeClientId,
-        scope: 'email profile openid',
-        callback: async (tokenResponse) => {
-          if (tokenResponse?.error) {
-            setLoading(false);
-            toast.error(tokenResponse.error_description || 'Google sign in was cancelled or failed');
-            return;
-          }
-          if (tokenResponse?.access_token) {
-            try {
-              const { data } = await api.post('/auth/google', { accessToken: tokenResponse.access_token });
-              setAuth(data.token, data.user);
-              toast.success(`Welcome, ${data.user.name || 'Developer'}!`);
-              onClose();
-              navigate(from, { replace: true });
-            } catch (err) {
-              toast.error(err.message || 'Authentication with backend failed');
-            } finally {
-              setLoading(false);
-            }
-          }
-        },
-      });
-      client.requestAccessToken();
-    } catch (e) {
-      setLoading(false);
-      toast.error(e.message || 'Could not launch Google Sign-In popup');
-    }
-  };
-
   const handleDirectSocialLogin = async (e) => {
     e?.preventDefault();
     const cleanEmail = email.trim();
     if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
-      toast.error('Please enter a valid email address');
+      toast.error('Please enter a valid Gmail / email address');
+      const input = document.getElementById('social-gmail-input');
+      if (input) input.focus();
       return;
     }
 
@@ -139,6 +100,55 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google' })
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOfficialGoogleSignIn = () => {
+    const activeClientId = googleClientId.trim() || import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (activeClientId && window.google?.accounts?.oauth2) {
+      setLoading(true);
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: activeClientId,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse?.error) {
+              setLoading(false);
+              toast.error(tokenResponse.error_description || 'Google sign in was cancelled or failed');
+              return;
+            }
+            if (tokenResponse?.access_token) {
+              try {
+                const { data } = await api.post('/auth/google', { accessToken: tokenResponse.access_token });
+                setAuth(data.token, data.user);
+                toast.success(`Welcome, ${data.user.name || 'Developer'}!`);
+                onClose();
+                navigate(from, { replace: true });
+              } catch (err) {
+                toast.error(err.message || 'Authentication with backend failed');
+              } finally {
+                setLoading(false);
+              }
+            }
+          },
+        });
+        client.requestAccessToken();
+        return;
+      } catch (e) {
+        setLoading(false);
+        // Fallback to direct sign-in if popup blocked
+      }
+    }
+
+    // Seamless fallback: If Gmail is already filled, sign in immediately!
+    if (email.trim()) {
+      handleDirectSocialLogin();
+      return;
+    }
+
+    // If no email entered yet, highlight input
+    toast('Enter your Gmail address below to sign in', { icon: '👉' });
+    const input = document.getElementById('social-gmail-input');
+    if (input) input.focus();
   };
 
   if (!isOpen) return null;
@@ -253,6 +263,7 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google' })
                       Your Gmail address
                     </label>
                     <input
+                      id="social-gmail-input"
                       type="email"
                       required
                       value={email}
