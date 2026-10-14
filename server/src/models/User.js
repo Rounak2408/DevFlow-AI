@@ -44,7 +44,14 @@ const billingSchema = new mongoose.Schema(
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true, minlength: 8, select: false },
+    password: {
+      type: String,
+      minlength: 8,
+      select: false,
+      required: function () {
+        return !this.googleId && !this.facebookId && !this.appleId && (!this.authProvider || this.authProvider === 'local');
+      },
+    },
     name: { type: String, required: true, trim: true },
     username: { type: String, trim: true, maxlength: 32, sparse: true, unique: true },
     phone: { type: String, default: '', trim: true, maxlength: 32 },
@@ -65,6 +72,14 @@ const userSchema = new mongoose.Schema(
     lastLoginAt: { type: Date, default: null },
     billing: { type: billingSchema, default: () => ({ plan: 'free' }) },
     globalRole: { type: String, enum: ['admin', 'member'], default: 'member' },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'facebook', 'apple', 'github'],
+      default: 'local',
+    },
+    googleId: { type: String, default: '', sparse: true },
+    facebookId: { type: String, default: '', sparse: true },
+    appleId: { type: String, default: '', sparse: true },
     githubAccessToken: { type: String, select: false, default: '' },
     githubUsername: { type: String, default: '' },
   },
@@ -72,13 +87,14 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function hashPassword(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.password || !this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 userSchema.methods.comparePassword = function comparePassword(candidate) {
+  if (!this.password) return false;
   return bcrypt.compare(candidate, this.password);
 };
 

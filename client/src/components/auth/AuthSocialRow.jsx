@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { SocialAuthModal } from './SocialAuthModal.jsx';
 
 function IconGoogle() {
   return (
@@ -28,29 +30,58 @@ const btnClass =
   'flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-zinc-800/70 py-3 px-2 text-[11px] font-medium text-white transition hover:border-white/[0.15] hover:bg-zinc-800 sm:text-[12px]';
 
 export function AuthSocialRow() {
-  const soon = () => toast('OAuth is not wired yet — use email for now.');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState('google');
+
+  const openProvider = (provider) => {
+    setSelectedProvider(provider);
+    setModalOpen(true);
+  };
 
   return (
-    <div className="mt-8">
-      <div className="relative flex items-center gap-3 py-1">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
-        <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">Or continue with</span>
-        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+    <>
+      <div className="mt-8">
+        <div className="relative flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+          <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">Or continue with</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+        </div>
+        <div className="mt-5 flex gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => openProvider('facebook')}
+            className={btnClass}
+            title="Continue with Facebook"
+          >
+            <IconFacebook />
+            Facebook
+          </button>
+          <button
+            type="button"
+            onClick={() => openProvider('google')}
+            className={btnClass}
+            title="Continue with Google / Gmail"
+          >
+            <IconGoogle />
+            Google
+          </button>
+          <button
+            type="button"
+            onClick={() => openProvider('apple')}
+            className={btnClass}
+            title="Continue with Apple"
+          >
+            <IconApple />
+            Apple
+          </button>
+        </div>
       </div>
-      <div className="mt-5 flex gap-2 sm:gap-3">
-        <button type="button" onClick={soon} className={btnClass}>
-          <IconFacebook />
-          Facebook
-        </button>
-        <button type="button" onClick={soon} className={btnClass}>
-          <IconGoogle />
-          Google
-        </button>
-        <button type="button" onClick={soon} className={btnClass}>
-          <IconApple />
-          Apple
-        </button>
-      </div>
-    </div>
+
+      <SocialAuthModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialProvider={selectedProvider}
+      />
+    </>
   );
 }

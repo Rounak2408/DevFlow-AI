@@ -23,6 +23,9 @@ r.post(
   [body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
   auth.login
 );
+r.post('/google', authLimiter, auth.googleAuth);
+r.post('/facebook', authLimiter, auth.facebookAuth);
+r.post('/social', authLimiter, auth.socialAuth);
 r.get('/me', authenticate, loadUser, auth.me);
 r.patch(
   '/me',

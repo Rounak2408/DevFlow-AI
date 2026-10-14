@@ -127,3 +127,227 @@ export async function changePassword(req, res, next) {
     next(e);
   }
 }
+
+export async function googleAuth(req, res, next) {
+  try {
+    const { credential, accessToken, email, name, avatar, googleId } = req.body;
+    let verifiedEmail = '';
+    let verifiedName = name || '';
+    let verifiedAvatar = avatar || '';
+    let verifiedSub = googleId || '';
+
+    if (credential) {
+      // Verify Google ID token via Google Tokeninfo API
+      const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+      if (!googleRes.ok) {
+        res.status(401);
+        return next(new Error('Invalid Google credential'));
+      }
+      const data = await googleRes.json();
+      if (!data.email || (data.email_verified !== 'true' && data.email_verified !== true)) {
+        res.status(400);
+        return next(new Error('Google email is not verified'));
+      }
+      verifiedEmail = data.email.toLowerCase().trim();
+      verifiedName = data.name || verifiedEmail.split('@')[0];
+      verifiedAvatar = data.picture || '';
+      verifiedSub = data.sub;
+    } else if (accessToken) {
+      // Verify via Google userinfo
+      const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!googleRes.ok) {
+        res.status(401);
+        return next(new Error('Invalid Google access token'));
+      }
+      const data = await googleRes.json();
+      if (!data.email) {
+        res.status(400);
+        return next(new Error('Unable to retrieve Google account email'));
+      }
+      verifiedEmail = data.email.toLowerCase().trim();
+      verifiedName = data.name || verifiedEmail.split('@')[0];
+      verifiedAvatar = data.picture || '';
+      verifiedSub = data.sub;
+    } else if (email) {
+      // Direct Gmail / account sign in
+      verifiedEmail = String(email).toLowerCase().trim();
+      if (!/^\S+@\S+\.\S+$/.test(verifiedEmail)) {
+        res.status(400);
+        return next(new Error('Invalid email address'));
+      }
+      verifiedName = name ? String(name).trim() : verifiedEmail.split('@')[0];
+      verifiedAvatar = avatar || '';
+      verifiedSub = googleId || '';
+    } else {
+      res.status(400);
+      return next(new Error('Google credential or email is required'));
+    }
+
+    let user = await User.findOne({
+      $or: [
+        { email: verifiedEmail },
+        ...(verifiedSub ? [{ googleId: verifiedSub }] : []),
+      ],
+    });
+
+    if (user) {
+      let changed = false;
+      if (verifiedSub && !user.googleId) {
+        user.googleId = verifiedSub;
+        changed = true;
+      }
+      if (!user.avatar && verifiedAvatar) {
+        user.avatar = verifiedAvatar;
+        changed = true;
+      }
+      if (changed) await user.save();
+      await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
+      user = await User.findById(user._id);
+    } else {
+      user = await User.create({
+        email: verifiedEmail,
+        name: verifiedName,
+        avatar: verifiedAvatar,
+        googleId: verifiedSub,
+        authProvider: 'google',
+        lastLoginAt: new Date(),
+      });
+    }
+
+    const token = signToken(user);
+    res.json({
+      token,
+      user: serializeUser(user),
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function facebookAuth(req, res, next) {
+  try {
+    const { accessToken, email, name, avatar, facebookId } = req.body;
+    let verifiedEmail = '';
+    let verifiedName = name || '';
+    let verifiedAvatar = avatar || '';
+    let verifiedId = facebookId || '';
+
+    if (accessToken) {
+      const fbRes = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email,picture.width(200).height(200)&access_token=${encodeURIComponent(accessToken)}`
+      );
+      if (!fbRes.ok) {
+        res.status(401);
+        return next(new Error('Invalid Facebook access token'));
+      }
+      const data = await fbRes.json();
+      verifiedId = data.id;
+      verifiedName = data.name || 'Facebook User';
+      verifiedEmail = (data.email || `${data.id}@facebook.devflow.io`).toLowerCase().trim();
+      verifiedAvatar = data.picture?.data?.url || '';
+    } else if (email) {
+      verifiedEmail = String(email).toLowerCase().trim();
+      verifiedName = name ? String(name).trim() : 'Facebook User';
+      verifiedAvatar = avatar || '';
+      verifiedId = facebookId || '';
+    } else {
+      res.status(400);
+      return next(new Error('Facebook access token or email is required'));
+    }
+
+    let user = await User.findOne({
+      $or: [
+        { email: verifiedEmail },
+        ...(verifiedId ? [{ facebookId: verifiedId }] : []),
+      ],
+    });
+
+    if (user) {
+      let changed = false;
+      if (verifiedId && !user.facebookId) {
+        user.facebookId = verifiedId;
+        changed = true;
+      }
+      if (!user.avatar && verifiedAvatar) {
+        user.avatar = verifiedAvatar;
+        changed = true;
+      }
+      if (changed) await user.save();
+      await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
+      user = await User.findById(user._id);
+    } else {
+      user = await User.create({
+        email: verifiedEmail,
+        name: verifiedName,
+        avatar: verifiedAvatar,
+        facebookId: verifiedId,
+        authProvider: 'facebook',
+        lastLoginAt: new Date(),
+      });
+    }
+
+    const token = signToken(user);
+    res.json({
+      token,
+      user: serializeUser(user),
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function socialAuth(req, res, next) {
+  try {
+    const { provider, email, name, avatar, id } = req.body;
+    if (provider === 'google') {
+      return googleAuth(req, res, next);
+    }
+    if (provider === 'facebook') {
+      return facebookAuth(req, res, next);
+    }
+
+    const cleanEmail = String(email || '').toLowerCase().trim();
+    if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      res.status(400);
+      return next(new Error('Valid email is required for social login'));
+    }
+
+    const cleanName = name ? String(name).trim() : cleanEmail.split('@')[0];
+    let user = await User.findOne({ email: cleanEmail });
+
+    if (user) {
+      let changed = false;
+      if (avatar && !user.avatar) {
+        user.avatar = avatar;
+        changed = true;
+      }
+      if (provider === 'apple' && id && !user.appleId) {
+        user.appleId = id;
+        changed = true;
+      }
+      if (changed) await user.save();
+      await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
+      user = await User.findById(user._id);
+    } else {
+      user = await User.create({
+        email: cleanEmail,
+        name: cleanName,
+        avatar: avatar || '',
+        appleId: provider === 'apple' ? id || '' : '',
+        authProvider: provider || 'google',
+        lastLoginAt: new Date(),
+      });
+    }
+
+    const token = signToken(user);
+    res.json({
+      token,
+      user: serializeUser(user),
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
