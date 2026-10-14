@@ -31,7 +31,7 @@ export function createApp() {
   app.use('/api', apiLimiter);
 
   app.get('/api/health', (req, res) => {
-    res.json({ ok: true, service: 'devflow-api' });
+    res.json({ ok: true, service: 'devflow-api', version: '2.5.0' });
   });
 
   app.use('/api/auth', authRoutes);
