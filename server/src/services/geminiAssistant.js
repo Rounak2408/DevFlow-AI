@@ -35,8 +35,8 @@ function toGeminiContents(historyMessages) {
 function getModel(fullSystemInstruction) {
   assertGemini();
   const genAI = new GoogleGenerativeAI(apiKey());
-  // `gemini-1.5-flash` often 404s on newer AI Studio keys; use a current ID (override via GEMINI_MODEL).
-  const modelName = (process.env.GEMINI_MODEL || 'gemini-2.0-flash').trim();
+  // `gemini-2.0-flash` is retired/deprecated by Google; default to `gemini-2.5-flash` (override via GEMINI_MODEL).
+  const modelName = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
   return genAI.getGenerativeModel({
     model: modelName,
     systemInstruction: fullSystemInstruction,
