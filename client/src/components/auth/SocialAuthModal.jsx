@@ -103,8 +103,10 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', d
   };
 
   const handleOfficialGoogleSignIn = () => {
-    const activeClientId = googleClientId.trim() || import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (activeClientId && window.google?.accounts?.oauth2) {
+    const activeClientId = (googleClientId.trim() || import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+    const isValidGoogleId = /^[0-9]+-[a-z0-9_]+\.apps\.googleusercontent\.com$/i.test(activeClientId);
+
+    if (isValidGoogleId && window.google?.accounts?.oauth2) {
       setLoading(true);
       try {
         const client = window.google.accounts.oauth2.initTokenClient({
@@ -137,6 +139,11 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', d
         setLoading(false);
         // Fallback to direct sign-in if popup blocked
       }
+    }
+
+    // If client ID is invalid or not yet configured:
+    if (activeClientId && !isValidGoogleId) {
+      toast('Invalid Client ID format. It should look like: 123456-xxx.apps.googleusercontent.com', { icon: '⚠️' });
     }
 
     // Seamless fallback: If Gmail is already filled, sign in immediately!
