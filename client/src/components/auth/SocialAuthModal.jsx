@@ -245,29 +245,10 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', d
           <div className="mt-5 space-y-4">
             {provider === 'google' && (
               <div>
-                {/* Official Google OAuth Button */}
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={handleOfficialGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-white/15 bg-white py-3 px-4 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-100 disabled:opacity-50"
-                >
-                  <IconGoogle />
-                  <span>{loading ? 'Authenticating…' : 'Continue with Google Account'}</span>
-                </button>
-
-                <div className="relative my-4 flex items-center gap-3">
-                  <div className="h-px flex-1 bg-white/10" />
-                  <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
-                    Or sign in with Gmail
-                  </span>
-                  <div className="h-px flex-1 bg-white/10" />
-                </div>
-
-                <form onSubmit={handleDirectSocialLogin} className="space-y-3">
+                <form onSubmit={handleDirectSocialLogin} className="space-y-3.5">
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-400 mb-1">
-                      Your Gmail address
+                    <label className="block text-[12px] font-medium text-zinc-300 mb-1.5">
+                      Your Gmail / Google Account
                     </label>
                     <input
                       id="social-gmail-input"
@@ -276,7 +257,7 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', d
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="e.g. rounakkeshri79@gmail.com"
-                      className="w-full rounded-xl border border-white/[0.1] bg-zinc-800/90 py-2.5 px-3.5 text-xs text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                      className="w-full rounded-xl border border-white/[0.12] bg-zinc-800/95 py-3 px-3.5 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
                     />
                   </div>
 
@@ -296,12 +277,27 @@ export function SocialAuthModal({ isOpen, onClose, initialProvider = 'google', d
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl border border-blue-500/30 bg-blue-600/80 hover:bg-blue-600 py-2.5 text-xs font-semibold text-white transition disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-blue-500/40 bg-blue-600 hover:bg-blue-500 py-3 text-sm font-semibold text-white shadow-[0_0_24px_-6px_rgba(59,130,246,0.6)] transition disabled:opacity-50"
                   >
-                    <span>{loading ? 'Signing in…' : 'Sign in with this Gmail'}</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <IconGoogle />
+                    <span>{loading ? 'Signing in…' : 'Sign in with Google / Gmail'}</span>
+                    <ArrowRight className="h-4 w-4" />
                   </button>
                 </form>
+
+                {/* Optional native popup button if client ID is set */}
+                {googleClientId && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={handleOfficialGoogleSignIn}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-zinc-800/80 py-2.5 px-3 text-xs font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition"
+                    >
+                      <span>Open Google OAuth Popup</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Google Client ID config toggler */}
                 <div className="mt-4 pt-3 border-t border-white/[0.06]">
