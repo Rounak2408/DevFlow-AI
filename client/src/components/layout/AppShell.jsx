@@ -39,7 +39,7 @@ export function AppShell() {
   const isAssistant = pathname === '/app/assistant';
 
   return (
-    <div className="relative flex min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F19] text-slate-100">
+    <div className="relative flex h-screen h-[100dvh] w-full min-w-0 overflow-hidden bg-[#0B0F19] text-slate-100">
       <div
         className="pointer-events-none fixed inset-0 -z-0"
         aria-hidden
@@ -57,17 +57,27 @@ export function AppShell() {
           onClick={() => setMobileOpen(false)}
         />
       )}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-[min(260px,calc(100vw-0.75rem))] max-w-[100vw] transition-transform duration-300 ease-out md:static md:z-10 md:max-w-none ${
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 h-full w-[min(260px,calc(100vw-0.75rem))] max-w-[100vw] shrink-0 transition-transform duration-300 ease-out md:static md:z-20 md:h-screen md:max-w-none ${
           collapsed ? 'md:w-[72px]' : 'md:w-[260px]'
         } ${mobileOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'}`}
       >
         <Sidebar onNavigate={() => setMobileOpen(false)} />
-      </div>
-      <div className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden">
-        <TopBar title={meta.title} subtitle={meta.subtitle} />
+      </aside>
+      <div className="relative z-10 flex h-full h-[100dvh] min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="shrink-0 z-30">
+          <TopBar title={meta.title} subtitle={meta.subtitle} />
+        </div>
         <main
-          className={`flex min-h-0 flex-1 flex-col ${isChatRoom || isAssistant ? 'overflow-hidden' : 'overflow-x-hidden overflow-y-auto'} ${isBoard || isChatRoom || isAssistant ? '' : 'px-3 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10'}`}
+          className={`flex min-h-0 flex-1 flex-col ${
+            isChatRoom || isAssistant
+              ? 'overflow-hidden'
+              : 'overflow-y-auto overflow-x-hidden scroll-thin'
+          } ${
+            isBoard || isChatRoom || isAssistant
+              ? ''
+              : 'px-3 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10 pb-20'
+          }`}
         >
           <motion.div
             key={pathname}
@@ -79,7 +89,7 @@ export function AppShell() {
                 ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col'
                 : isChatRoom || isAssistant
                   ? 'flex min-h-0 min-w-0 w-full max-w-none flex-1 flex-col'
-                  : 'mx-auto w-full min-w-0 max-w-7xl'
+                  : 'mx-auto w-full min-w-0 max-w-7xl pb-8'
             }
           >
             <Outlet />
