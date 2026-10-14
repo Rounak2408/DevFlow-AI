@@ -26,6 +26,7 @@ export function Workspace() {
   const [aiSpec, setAiSpec] = useState('');
   const [aiBug, setAiBug] = useState('');
   const [aiOut, setAiOut] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [repoEdit, setRepoEdit] = useState('');
   const [typing, setTyping] = useState(false);
   const [chatTab, setChatTab] = useState('All');
@@ -157,15 +158,23 @@ export function Workspace() {
   }
 
   async function runAi(kind) {
+    const text = (kind === 'tasks' ? aiSpec : aiBug).trim();
+    if (!text) {
+      toast.error(kind === 'tasks' ? 'Please enter a feature description or goal' : 'Please enter a bug description');
+      return;
+    }
+    if (aiLoading) return;
+    setAiLoading(true);
     try {
       setAiOut(null);
       const path = kind === 'tasks' ? '/ai/task-breakdown' : '/ai/bug-suggest';
-      const text = kind === 'tasks' ? aiSpec : aiBug;
       const { data } = await api.post(path, { text });
       setAiOut(data);
-      toast.success(data.fromCache ? 'From cache' : 'AI ready');
+      toast.success(data?.fromCache ? 'From cache' : 'AI ready');
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.message || 'AI request failed');
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -206,6 +215,7 @@ export function Workspace() {
     aiBug,
     setAiBug,
     aiOut,
+    aiLoading,
     onRunAi: runAi,
   };
 

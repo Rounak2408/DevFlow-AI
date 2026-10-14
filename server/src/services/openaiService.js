@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { runGeminiCompletion, isGeminiConfigured } from './geminiAssistant.js';
 
 const RETRIES = 3;
 const BASE_DELAY_MS = 500;
@@ -7,7 +8,19 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function getProvider() {
+  return (process.env.LLM_PROVIDER || 'openai').trim().toLowerCase();
+}
+
 export function getOpenAIClient() {
+  const provider = getProvider();
+  if (provider === 'ollama') {
+    return new OpenAI({
+      baseURL: process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434/v1',
+      apiKey: process.env.OLLAMA_API_KEY || 'ollama',
+      timeout: Number(process.env.OPENAI_TIMEOUT_MS || 120000),
+    });
+  }
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error('OPENAI_API_KEY is not configured');
   return new OpenAI({ apiKey: key });
@@ -33,10 +46,33 @@ async function withRetry(fn) {
 }
 
 export async function generateTaskBreakdown(text) {
+  const provider = getProvider();
+  if (provider === 'gemini' || isGeminiConfigured()) {
+    const system =
+      'You are a senior engineering lead. Given a goal, feature description, or prompt, return a JSON array of task objects: [{"title": string, "description": string, "priority": "low"|"medium"|"high"|"urgent"}]. Return only valid JSON array, no markdown fences or other text.';
+    const raw = await withRetry(() =>
+      runGeminiCompletion(system, [{ role: 'user', content: String(text).trim() }])
+    );
+    try {
+      const cleaned = raw.replace(/^```json\s*|\s*```$/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {
+      /* fallback below */
+    }
+    return [
+      {
+        title: String(text).slice(0, 60),
+        description: raw.slice(0, 200) || 'Task created from input',
+        priority: 'medium',
+      },
+    ];
+  }
+
   const client = getOpenAIClient();
   const completion = await withRetry(() =>
     client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      model: provider === 'ollama' ? (process.env.OLLAMA_MODEL || 'llama3.2') : (process.env.OPENAI_MODEL || 'gpt-4o-mini'),
       messages: [
         {
           role: 'system',
@@ -58,10 +94,19 @@ export async function generateTaskBreakdown(text) {
 }
 
 export async function suggestBugFix(description) {
+  const provider = getProvider();
+  if (provider === 'gemini' || isGeminiConfigured()) {
+    const system =
+      'You are a debugging assistant. Provide concise steps: hypothesis, checks, and a likely fix. Use short bullet points.';
+    return withRetry(() =>
+      runGeminiCompletion(system, [{ role: 'user', content: String(description).trim() }])
+    );
+  }
+
   const client = getOpenAIClient();
   const completion = await withRetry(() =>
     client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      model: provider === 'ollama' ? (process.env.OLLAMA_MODEL || 'llama3.2') : (process.env.OPENAI_MODEL || 'gpt-4o-mini'),
       messages: [
         {
           role: 'system',

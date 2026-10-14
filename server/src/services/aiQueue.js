@@ -85,9 +85,20 @@ export async function enqueueTaskBreakdown(text) {
   const cached = await cacheGet(ck);
   if (cached) return { fromCache: true, tasks: cached };
 
-  const queue = getTaskBreakdownQueue();
-  const job = await queue.add({ text });
-  const tasks = await job.finished();
+  let tasks;
+  if (process.env.AI_USE_QUEUE === '1') {
+    try {
+      const queue = getTaskBreakdownQueue();
+      const job = await queue.add({ text });
+      tasks = await job.finished();
+    } catch (e) {
+      console.warn('[aiQueue] Bull queue failed, running direct fallback:', e.message);
+      tasks = await generateTaskBreakdown(text);
+    }
+  } else {
+    tasks = await generateTaskBreakdown(text);
+  }
+
   await cacheSet(ck, tasks, Number(process.env.AI_CACHE_TTL || 3600));
   return { fromCache: false, tasks };
 }
@@ -97,13 +108,26 @@ export async function enqueueBugSuggest(text) {
   const cached = await cacheGet(ck);
   if (typeof cached === 'string') return { fromCache: true, suggestion: cached };
 
-  const queue = getBugSuggestQueue();
-  const job = await queue.add({ text });
-  const suggestion = await job.finished();
+  let suggestion;
+  if (process.env.AI_USE_QUEUE === '1') {
+    try {
+      const queue = getBugSuggestQueue();
+      const job = await queue.add({ text });
+      suggestion = await job.finished();
+    } catch (e) {
+      console.warn('[aiQueue] Bull queue failed, running direct fallback:', e.message);
+      suggestion = await suggestBugFix(text);
+    }
+  } else {
+    suggestion = await suggestBugFix(text);
+  }
+
   await cacheSet(ck, suggestion, Number(process.env.AI_CACHE_TTL || 1800));
   return { fromCache: false, suggestion };
 }
 
 export function ensureRedisForBull() {
-  getRedis();
+  if (process.env.AI_USE_QUEUE === '1') {
+    getRedis();
+  }
 }

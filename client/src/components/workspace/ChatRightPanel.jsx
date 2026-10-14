@@ -27,6 +27,7 @@ export function ChatRightPanel({
   aiBug,
   setAiBug,
   aiOut,
+  aiLoading,
   onRunAi,
 }) {
   const [notifOn, setNotifOn] = useState(true);
@@ -217,42 +218,72 @@ export function ChatRightPanel({
         </div>
 
         <div className="mt-6 rounded-xl border border-white/[0.05] bg-[#0B0F19] p-3">
-          <p className="flex items-center gap-2 text-[12px] font-semibold text-white">
-            <Bot className="h-4 w-4 text-blue-400" />
-            AI assistant
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="flex items-center gap-2 text-[12px] font-semibold text-white">
+              <Bot className="h-4 w-4 text-blue-400" />
+              AI assistant
+            </p>
+            <Link
+              to="/app/assistant"
+              className="text-[10px] font-medium text-blue-400 hover:text-blue-300 hover:underline"
+            >
+              Open full chat →
+            </Link>
+          </div>
           <textarea
             value={aiSpec}
             onChange={(e) => setAiSpec(e.target.value)}
             rows={2}
             placeholder="Feature → task breakdown"
-            className="mt-2 w-full rounded-lg border border-white/[0.05] bg-[#111827] px-2 py-1.5 text-[11px] text-white"
+            disabled={aiLoading}
+            className="mt-2 w-full rounded-lg border border-white/[0.05] bg-[#111827] px-2 py-1.5 text-[11px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 disabled:opacity-50"
           />
           <button
             type="button"
+            disabled={aiLoading}
             onClick={() => onRunAi('tasks')}
-            className="mt-1 w-full rounded-lg bg-blue-600 py-1.5 text-[11px] font-semibold text-white"
+            className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg bg-blue-600 py-1.5 text-[11px] font-semibold text-white shadow transition hover:bg-blue-500 disabled:opacity-50"
           >
-            Generate
+            {aiLoading ? 'Generating…' : 'Generate'}
           </button>
           <textarea
             value={aiBug}
             onChange={(e) => setAiBug(e.target.value)}
             rows={2}
             placeholder="Bug → suggestions"
-            className="mt-2 w-full rounded-lg border border-white/[0.05] bg-[#111827] px-2 py-1.5 text-[11px] text-white"
+            disabled={aiLoading}
+            className="mt-2 w-full rounded-lg border border-white/[0.05] bg-[#111827] px-2 py-1.5 text-[11px] text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 disabled:opacity-50"
           />
           <button
             type="button"
+            disabled={aiLoading}
             onClick={() => onRunAi('bug')}
-            className="mt-1 w-full rounded-lg border border-white/[0.08] py-1.5 text-[11px] font-medium text-slate-300"
+            className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-white/[0.08] py-1.5 text-[11px] font-medium text-slate-300 transition hover:bg-white/[0.04] disabled:opacity-50"
           >
-            Suggest fix
+            {aiLoading ? 'Analyzing…' : 'Suggest fix'}
           </button>
           {aiOut && (
-            <pre className="mt-2 max-h-32 overflow-auto rounded-lg bg-black/40 p-2 text-[9px] text-emerald-300/90">
-              {JSON.stringify(aiOut, null, 2)}
-            </pre>
+            <div className="mt-3 rounded-lg border border-white/[0.08] bg-black/40 p-2.5 text-[11px] text-slate-200">
+              {Array.isArray(aiOut.tasks) ? (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Generated Tasks ({aiOut.tasks.length}):</p>
+                  {aiOut.tasks.map((t, idx) => (
+                    <div key={idx} className="rounded bg-white/[0.04] p-1.5">
+                      <p className="font-semibold text-white">{t.title}</p>
+                      {t.description && <p className="text-[10px] text-slate-400">{t.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              ) : typeof aiOut.suggestion === 'string' ? (
+                <div className="whitespace-pre-wrap text-[11px] leading-relaxed text-slate-200">
+                  {aiOut.suggestion}
+                </div>
+              ) : (
+                <pre className="max-h-32 overflow-auto text-[9px] text-emerald-300/90">
+                  {JSON.stringify(aiOut, null, 2)}
+                </pre>
+              )}
+            </div>
           )}
         </div>
 
