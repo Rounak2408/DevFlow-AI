@@ -35,8 +35,11 @@ function toGeminiContents(historyMessages) {
 function getModel(fullSystemInstruction) {
   assertGemini();
   const genAI = new GoogleGenerativeAI(apiKey());
-  // `gemini-2.0-flash` is retired/deprecated by Google; default to `gemini-2.5-flash` (override via GEMINI_MODEL).
-  const modelName = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
+  let modelName = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim();
+  // Protect against deprecated models even if configured in cloud env vars (e.g. Render GEMINI_MODEL=gemini-2.0-flash)
+  if (!modelName || modelName.includes('2.0') || modelName.includes('1.5')) {
+    modelName = 'gemini-2.5-flash';
+  }
   return genAI.getGenerativeModel({
     model: modelName,
     systemInstruction: fullSystemInstruction,
