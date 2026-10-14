@@ -155,7 +155,7 @@ export function ChatMessagesPanel({
   }
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col bg-[#0B0F19]">
+    <div className="flex h-full min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden bg-[#0B0F19]">
       <input ref={galleryRef} type="file" accept="image/*,video/*" className="hidden" onChange={onGalleryPick} />
       <input
         ref={cameraRef}
@@ -246,7 +246,7 @@ export function ChatMessagesPanel({
         </div>
       </header>
 
-      <div className="scroll-thin flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
+      <div className="scroll-thin min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
         {!messages.length && (
           <div className="flex min-h-[200px] flex-col items-center justify-center py-12">
             <EmptyState
@@ -383,7 +383,7 @@ export function ChatMessagesPanel({
 
       <form
         onSubmit={onSubmit}
-        className="shrink-0 border-t border-white/[0.05] bg-[#0B0F19]/95 p-3 backdrop-blur-md sm:p-4"
+        className="relative z-20 shrink-0 border-t border-white/[0.08] bg-[#0B0F19] p-3 backdrop-blur-md sm:p-4"
       >
         <div className="flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-[#111827] p-2 shadow-inner transition duration-300 focus-within:border-blue-500/35 focus-within:ring-2 focus-within:ring-blue-500/15">
           <div className="flex shrink-0 gap-0.5 pb-1.5 pl-1">

@@ -34,9 +34,18 @@ export function AppShell() {
   else if (projectId && pathname.endsWith(`/projects/${projectId}`))
     meta = { title: 'Project workspace', subtitle: 'Chat & activity' };
 
-  const isBoard = pathname.includes('/board');
-  const isChatRoom = Boolean(projectId && pathname === `/app/projects/${projectId}`);
-  const isAssistant = pathname === '/app/assistant';
+  const cleanPath = pathname.replace(/\/+$/, '');
+  const isBoard = cleanPath.includes('/board');
+  const isChatRoom = Boolean(
+    projectId &&
+      cleanPath.startsWith(`/app/projects/${projectId}`) &&
+      !cleanPath.includes('/board') &&
+      !cleanPath.includes('/members') &&
+      !cleanPath.includes('/reports') &&
+      !cleanPath.includes('/roadmap') &&
+      !cleanPath.includes('/analytics')
+  );
+  const isAssistant = cleanPath === '/app/assistant';
 
   return (
     <div className="relative flex h-screen h-[100dvh] w-full min-w-0 overflow-hidden bg-[#0B0F19] text-slate-100">
@@ -70,8 +79,8 @@ export function AppShell() {
         </div>
         <main
           className={`flex min-h-0 flex-1 flex-col ${
-            isChatRoom || isAssistant
-              ? 'overflow-hidden'
+            isBoard || isChatRoom || isAssistant
+              ? 'h-full overflow-hidden'
               : 'overflow-y-auto overflow-x-hidden scroll-thin'
           } ${
             isBoard || isChatRoom || isAssistant
@@ -85,11 +94,9 @@ export function AppShell() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             className={
-              isBoard
-                ? 'flex h-full min-h-0 min-w-0 flex-1 flex-col'
-                : isChatRoom || isAssistant
-                  ? 'flex min-h-0 min-w-0 w-full max-w-none flex-1 flex-col'
-                  : 'mx-auto w-full min-w-0 max-w-7xl pb-8'
+              isBoard || isChatRoom || isAssistant
+                ? 'flex h-full min-h-0 min-w-0 w-full max-w-none flex-1 flex-col overflow-hidden'
+                : 'mx-auto w-full min-w-0 max-w-7xl pb-8'
             }
           >
             <Outlet />

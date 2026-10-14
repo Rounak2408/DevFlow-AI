@@ -220,15 +220,15 @@ export function Workspace() {
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[#0B0F19]">
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-[#0B0F19]">
       {loading && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-[#0B0F19]/70 backdrop-blur-[2px]">
           <Skeleton className="h-12 w-48 rounded-xl" />
         </div>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(220px,280px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr_minmax(260px,340px)]">
-        <aside className="hidden min-h-0 flex-col border-r border-white/[0.05] md:flex">
+      <div className="grid h-full min-h-0 w-full flex-1 grid-cols-1 overflow-hidden md:grid-cols-[minmax(220px,280px)_1fr] xl:grid-cols-[minmax(220px,280px)_1fr_minmax(260px,340px)]">
+        <aside className="hidden h-full min-h-0 flex-col overflow-hidden border-r border-white/[0.05] md:flex">
           <ChatListPanel
             project={project}
             lastPreview={lastPreview}
@@ -256,7 +256,7 @@ export function Workspace() {
           </>
         )}
 
-        <section className="flex min-h-0 min-w-0 flex-col">
+        <section className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <ChatMessagesPanel
             project={project}
             messages={messages}
@@ -278,7 +278,7 @@ export function Workspace() {
           />
         </section>
 
-        <aside className="hidden min-h-0 flex-col xl:flex">
+        <aside className="hidden h-full min-h-0 flex-col overflow-hidden border-l border-white/[0.05] xl:flex">
           <ChatRightPanel {...rightPanelProps} />
         </aside>
 

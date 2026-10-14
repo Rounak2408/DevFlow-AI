@@ -34,7 +34,7 @@ export function ChatRightPanel({
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden border-l border-white/[0.05] bg-[#111827]/95 backdrop-blur-sm">
-      <div className="border-b border-white/[0.05] p-4">
+      <div className="shrink-0 border-b border-white/[0.05] p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h3 className="text-[15px] font-semibold text-white">{project?.name}</h3>
@@ -71,49 +71,50 @@ export function ChatRightPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 p-3">
-        <div className="rounded-xl border border-white/[0.05] bg-[#0B0F19] p-3">
-          <div className="flex items-center gap-2 text-slate-400">
-            <FolderOpen className="h-4 w-4" />
-            <span className="text-[11px] font-medium">Files</span>
+      <div className="flex-1 min-h-0 overflow-y-auto scroll-thin">
+        <div className="grid grid-cols-2 gap-2 p-3">
+          <div className="rounded-xl border border-white/[0.05] bg-[#0B0F19] p-3">
+            <div className="flex items-center gap-2 text-slate-400">
+              <FolderOpen className="h-4 w-4" />
+              <span className="text-[11px] font-medium">Files</span>
+            </div>
+            <p className="mt-2 text-lg font-semibold text-white">12</p>
+            <p className="text-[10px] text-slate-500">of 500</p>
           </div>
-          <p className="mt-2 text-lg font-semibold text-white">12</p>
-          <p className="text-[10px] text-slate-500">of 500</p>
-        </div>
-        <div className="rounded-xl border border-white/[0.05] bg-[#0B0F19] p-3">
-          <div className="flex items-center gap-2 text-slate-400">
-            <Link2 className="h-4 w-4" />
-            <span className="text-[11px] font-medium">Links</span>
+          <div className="rounded-xl border border-white/[0.05] bg-[#0B0F19] p-3">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Link2 className="h-4 w-4" />
+              <span className="text-[11px] font-medium">Links</span>
+            </div>
+            <p className="mt-2 text-lg font-semibold text-white">4</p>
+            <p className="text-[10px] text-slate-500">shared</p>
           </div>
-          <p className="mt-2 text-lg font-semibold text-white">4</p>
-          <p className="text-[10px] text-slate-500">shared</p>
         </div>
-      </div>
 
-      <div className="flex gap-1 border-b border-white/[0.05] px-3">
-        {['Media', 'Document', 'Links'].map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setAssetTab(t)}
-            className={`px-2 py-2 text-[11px] font-medium transition ${
-              assetTab === t ? 'border-b-2 border-blue-500 text-white' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-1 p-2">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div
-            key={i}
-            className="aspect-square rounded-lg bg-gradient-to-br from-slate-700/50 to-slate-800/80"
-          />
-        ))}
-      </div>
+        <div className="flex gap-1 border-b border-white/[0.05] px-3">
+          {['Media', 'Document', 'Links'].map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setAssetTab(t)}
+              className={`px-2 py-2 text-[11px] font-medium transition ${
+                assetTab === t ? 'border-b-2 border-blue-500 text-white' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-3 gap-1 p-2">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="aspect-square rounded-lg bg-gradient-to-br from-slate-700/50 to-slate-800/80"
+            />
+          ))}
+        </div>
 
-      <div className="flex-1 overflow-y-auto scroll-thin border-t border-white/[0.05] p-4">
+        <div className="border-t border-white/[0.05] p-4">
         <motion.button
           type="button"
           whileHover={{ scale: 1.02 }}
@@ -263,5 +264,6 @@ export function ChatRightPanel({
         </button>
       </div>
     </div>
+  </div>
   );
 }
